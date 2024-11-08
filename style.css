@@ -1,0 +1,11 @@
+.container {
+	width: "500px";
+}
+
+#myForm {
+	position: absolute;
+	background: transparent;
+	border: transparent;
+	top: 50%;
+	left: 50%;
+}
