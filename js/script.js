@@ -27,18 +27,18 @@ let scoreText;
 let wordText;
 
 class Example extends Phaser.Scene {
-	// check out this dude: https://opengameart.org/content/red-haired-run-and-jump-sprite-sheets
 	preload() {
-		this.load.setBaseURL('https://labs.phaser.io');
+		this.load.setBaseURL('assets/');
 
 		// this.load.image('sky', 'assets/skies/space3.png');
-		this.load.image('logo', 'assets/sprites/phaser3-logo.png');
-		//		this.load.image('red', 'assets/particles/red.png');
+		this.load.image('idle', 'idle/frame-1.png');
 	}
 
 	create() {
 
-		// this.add.image(400, 300, 'sky');
+		this.idleSprite = this.add.sprite(400,400, 'idle');
+		this.idleSprite.setScale(0.3);
+		
 		/*
 						const particles = this.add.particles(0, 0, 'red', {
 							speed: 100,
@@ -50,26 +50,23 @@ class Example extends Phaser.Scene {
 						});
 		*/
 
-		scoreText = this.add.text(16, 16, 'score: 0', {
+		scoreText = this.add.text(16, 16, 'Score: 0', {
 			fontSize: '48px',
 			fontFamily: 'Arial',
-			fill: 'blue'
+			fill: 'black'
 		});
-				wordText = this.add.text(300, 200, top100Words[0], {
+		wordText = this.add.text(400, 50, top100Words[0], {
 			fontSize: '48px',
 			fontFamily: 'Arial',
 			fill: 'white'
-		});
+		}).setOrigin(0.5, 0.5);
 		/*
 		            const logo = this.physics.add.image(400, 100, 'logo');
-
 		            logo.setVelocity(100, 200);
 		            logo.setBounce(1, 1);
 		            logo.setCollideWorldBounds(true);
-
 		            particles.startFollow(logo);
 		*/
-
 
 		//field.addEventListener("keyup", checkWord());
 		this.formUtil = new FormUtil({
@@ -77,7 +74,6 @@ class Example extends Phaser.Scene {
 		});
 		this.formUtil.addChangeCallback("area51", this.textAreaChanged, this);
 		word = top100Words[number];
-
 
 	}
 
