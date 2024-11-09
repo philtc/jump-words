@@ -19,7 +19,6 @@ class FormUtil {
 	}
 }
 
-
 let number = 0;
 let score = number;
 let word;
@@ -29,32 +28,22 @@ let wordText;
 class Example extends Phaser.Scene {
 	preload() {
 		this.load.setBaseURL('assets/');
-
-		// this.load.image('sky', 'assets/skies/space3.png');
 		this.load.image('idle', 'idle/frame-1.png');
+		this.load.image('jump', 'jump/jump_up.png');
 	}
 
 	create() {
 
-		this.idleSprite = this.add.sprite(400,400, 'idle');
-		this.idleSprite.setScale(0.3);
+		this.idleSprite = this.physics.add.sprite(400,600, 'idle');
+		this.idleSprite.setScale(0.15);
+		this.idleSprite.setCollideWorldBounds(true);
 		
-		/*
-						const particles = this.add.particles(0, 0, 'red', {
-							speed: 100,
-							scale: {
-								start: 1,
-								end: 0
-							},
-							blendMode: 'ADD'
-						});
-		*/
-
 		scoreText = this.add.text(16, 16, 'Score: 0', {
 			fontSize: '48px',
 			fontFamily: 'Arial',
 			fill: 'black'
 		});
+
 		wordText = this.add.text(400, 50, top100Words[0], {
 			fontSize: '48px',
 			fontFamily: 'Arial',
@@ -72,7 +61,7 @@ class Example extends Phaser.Scene {
 		this.formUtil = new FormUtil({
 			scene: this
 		});
-		this.formUtil.addChangeCallback("area51", this.textAreaChanged, this);
+		this.formUtil.addChangeCallback("area51", this.textAreaChanged.bind(this));
 		word = top100Words[number];
 
 	}
@@ -86,6 +75,15 @@ class Example extends Phaser.Scene {
 				alert("you've finihsed!");
 				// TODO: Add confetti
 			} else {
+				// Make the sprite "jump" by setting an upward velocity
+				this.idleSprite.setTexture('jump');
+				this.idleSprite.setVelocityY(-150); // Adjust -300 for a higher/lower jump
+
+							// Set a timer to switch back to the idle texture after a short delay
+			this.time.delayedCall(500, () => {
+				this.idleSprite.setTexture('idle');
+			}, null, this);
+
 				word = top100Words[number];
 				document.getElementById('myForm').reset();
 				//score += 10;
