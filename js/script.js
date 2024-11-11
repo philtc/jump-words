@@ -24,6 +24,9 @@ let score = number;
 let word;
 let scoreText;
 let wordText;
+let newX = 0;
+let oldX = 100;
+let newY = 0;
 
 class Example extends Phaser.Scene {
 	preload() {
@@ -34,30 +37,22 @@ class Example extends Phaser.Scene {
 
 	create() {
 
-		this.idleSprite = this.physics.add.sprite(400,600, 'idle');
-		this.idleSprite.setScale(0.15);
+		this.idleSprite = this.physics.add.sprite(200,400, 'idle');
+		this.idleSprite.setScale(0.1);
 		this.idleSprite.setCollideWorldBounds(true);
 		
 		scoreText = this.add.text(16, 16, 'Score: 0', {
-			fontSize: '48px',
+			fontSize: '2em',
 			fontFamily: 'Arial',
 			fill: 'black'
 		});
 
-		wordText = this.add.text(400, 50, top100Words[0], {
-			fontSize: '48px',
+		wordText = this.add.text(200, 16, top100Words[0], {
+			fontSize: '2em',
 			fontFamily: 'Arial',
 			fill: 'white'
-		}).setOrigin(0.5, 0.5);
-		/*
-		            const logo = this.physics.add.image(400, 100, 'logo');
-		            logo.setVelocity(100, 200);
-		            logo.setBounce(1, 1);
-		            logo.setCollideWorldBounds(true);
-		            particles.startFollow(logo);
-		*/
+		}).setOrigin(1, 0.1);
 
-		//field.addEventListener("keyup", checkWord());
 		this.formUtil = new FormUtil({
 			scene: this
 		});
@@ -75,9 +70,21 @@ class Example extends Phaser.Scene {
 				alert("you've finihsed!");
 				// TODO: Add confetti
 			} else {
+				newX = Phaser.Math.Between(50, 350); // Random integer between 1 and 10
+
 				// Make the sprite "jump" by setting an upward velocity
 				this.idleSprite.setTexture('jump');
-				this.idleSprite.setVelocityY(-150); // Adjust -300 for a higher/lower jump
+				// this.idleSprite.setVelocityY(-150); // Adjust -300 for a higher/lower jump
+				if (newX > oldX) {
+					this.idleSprite.setFlipX(false); // Face right
+				} else if (newX < oldX) {
+					this.idleSprite.setFlipX(true); // Face left
+				}
+
+
+				this.physics.moveTo(this.idleSprite,newX,300,0,300);
+				//game.physics.arcade.moveTo(this.idleSprite,200,100,0,300);
+				oldX = newX;
 
 							// Set a timer to switch back to the idle texture after a short delay
 			this.time.delayedCall(500, () => {
@@ -93,14 +100,23 @@ class Example extends Phaser.Scene {
 		}
 	}
 
-	update() {}
+	update() {
+		const targetX = newX;
+		const targetY = 300;
+		const tolerance = 10; // Allowable distance before stopping
+	
+		if (Phaser.Math.Distance.Between(this.idleSprite.x, this.idleSprite.y, targetX, targetY) < tolerance) {
+			this.idleSprite.body.setVelocity(0); // Stop the sprite
+		}
+
+	}
 
 }
 
 const config = {
 	type: Phaser.AUTO,
-	width: 800,
-	height: 600,
+	width: 400,
+	height: 450,
 	scene: Example,
 	backgroundColor: '#479cde',
 	physics: {
