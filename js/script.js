@@ -33,14 +33,28 @@ class Example extends Phaser.Scene {
 		this.load.setBaseURL('assets/');
 		this.load.image('idle', 'idle/frame-1.png');
 		this.load.image('jump', 'jump/jump_up.png');
+		this.load.image('tile', 'tile/tile.png');
 	}
 
 	create() {
 
-		this.idleSprite = this.physics.add.sprite(200,400, 'idle');
+		this.map = this.make.tilemap({ tileWidth: 20, tileHeight: 20, width: 20, height: 20 });
+		this.tileset = this.map.addTilesetImage('tile');
+		this.layer = this.map.createBlankLayer('layer1', this.tileset);
+		this.layer.setCollisionByExclusion([-1]);
+
+						// Enable arcade physics on the layer
+		//this.physics.world.enable(this.layer);
+		//this.layer.setCollisionFromCollisionGroup();
+
+		this.idleSprite = this.physics.add.sprite(200, 400, 'idle');
 		this.idleSprite.setScale(0.1);
 		this.idleSprite.setCollideWorldBounds(true);
+		this.idleSprite.setGravityY(200);
 		
+		// Add a collider between the sprite and the layer
+		this.physics.add.collider(this.idleSprite, this.layer);
+
 		scoreText = this.add.text(16, 16, 'Score: 0', {
 			fontSize: '2em',
 			fontFamily: 'Arial',
@@ -53,25 +67,28 @@ class Example extends Phaser.Scene {
 			fill: 'white'
 		}).setOrigin(1, 0.1);
 
-		this.formUtil = new FormUtil({
-			scene: this
-		});
+		this.formUtil = new FormUtil({ scene: this });
 		this.formUtil.addChangeCallback("area51", this.textAreaChanged.bind(this));
 		word = top100Words[number];
-
 	}
 
 	textAreaChanged() {
-		var text = this.formUtil.getTextAreaValue("area51");
-		//console.log(text);
+		let text = this.formUtil.getTextAreaValue("area51");
+
 		if (text.includes(word)) {
 			number++;
 			if (number >= top100Words.length) {
-				alert("you've finihsed!");
+				alert("you've finished!");
 				// TODO: Add confetti
 			} else {
-				newX = Phaser.Math.Between(50, 350); // Random integer between 1 and 10
-
+				newX = Phaser.Math.Between(50, 350);
+				const tileX = this.map.worldToTileX(newX);
+                const tileY = this.map.worldToTileY(360);
+                // Place a tile at the specified location
+                const placedTile = this.layer.putTileAt(0, tileX, tileY);
+                if (placedTile) {
+                    placedTile.setCollision(true); // Enable collision on this tile
+                }
 				// Make the sprite "jump" by setting an upward velocity
 				this.idleSprite.setTexture('jump');
 				// this.idleSprite.setVelocityY(-150); // Adjust -300 for a higher/lower jump
@@ -81,9 +98,7 @@ class Example extends Phaser.Scene {
 					this.idleSprite.setFlipX(true); // Face left
 				}
 
-
-				this.physics.moveTo(this.idleSprite,newX,300,0,300);
-				//game.physics.arcade.moveTo(this.idleSprite,200,100,0,300);
+				this.physics.moveTo(this.idleSprite, newX, 300, 0, 300);
 				oldX = newX;
 
 							// Set a timer to switch back to the idle texture after a short delay
@@ -116,15 +131,13 @@ class Example extends Phaser.Scene {
 const config = {
 	type: Phaser.AUTO,
 	width: 400,
-	height: 450,
+	height: 400,
 	scene: Example,
 	backgroundColor: '#479cde',
 	physics: {
 		default: 'arcade',
 		arcade: {
-			gravity: {
-				y: 200
-			}
+			gravity: { y: 0 }
 		}
 	}
 };
