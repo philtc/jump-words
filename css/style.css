@@ -1,11 +1,29 @@
-.container {
-	width: "500px";
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0; /* Light background color to contrast the "page" */
+    font-family: Arial, sans-serif;
 }
 
 #myForm {
 	position: absolute;
-	background: transparent;
-	border: transparent;
-	top: 50%;
-	left: 50%;
+	background-color: '#479cde';
+	border: none;
+	width: 400px;
+	top: 20%;
+    text-align: center;
+}
+
+#area51 {
+	background-color: '#479cde';
+	border: none;
+
 }
