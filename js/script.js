@@ -20,7 +20,7 @@ class FormUtil {
 }
 
 let number = 0;
-let score = number;
+let score = 0;
 let word;
 let scoreText;
 let wordText;
@@ -30,6 +30,8 @@ let newY = 395;
 let oldY = 395;
 let colorTop = '#0000ff';
 let colorBottom = '#87cefa';
+let startTime = Date.now();
+let endTime;
 
 class Example extends Phaser.Scene {
 	preload() {
@@ -107,6 +109,28 @@ class Example extends Phaser.Scene {
 
 		return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 	};
+	
+	calcScore(startTime, endTime) {
+		// 5 points for over 200 WPM, 4 for over 150 WPM, 3 for over 100 WPM, 2 for over 50 WPM
+		const WPM = 60000 / (endTime - startTime);
+		console.log("time is: " + WPM);
+		switch (true) {
+			case WPM > 200:
+				return 5;
+				break;
+			case WPM > 150:
+				return 4;
+				break;
+			case WPM > 100:
+				return 3;
+				break;
+			case WPM > 50:
+				return 2;
+				break;
+			default:
+				return 1;
+		}
+	}
 
 	textAreaChanged() {
 		let text = this.formUtil.getTextAreaValue("area51");
@@ -114,18 +138,22 @@ class Example extends Phaser.Scene {
 		if (text.includes(word)) {
 			number++;
 			if (number >= top100Words.length) {
-				// alert("you've finished!");
-				// TODO: Add stars
-        const emitter = this.add.particles(200, 200, 'star', {
-            lifespan: 1500,
-            speed: { min: 150, max: 250 },
-            scale: { start: 0.8, end: 0 },
-            gravityY: 150,
-            blendMode: 'ADD',
-            emitting: false
-        });
-			emitter.explode(10,0,0);
+				const emitter = this.add.particles(200, 200, 'star', {
+					lifespan: 2000,
+					speed: { min: 150, max: 250 },
+					scale: { start: 0.8, end: 0 },
+					gravityY: 150,
+					blendMode: 'ADD',
+					emitting: false
+				});
+				document.getElementById("area51").style.display = 'none';
+				wordText.setText('');
+				emitter.explode((score/10), 0, 0);
 			} else {
+				endTime = Date.now();
+				score += this.calcScore(startTime, endTime);
+				console.log('scored is '+score);
+				startTime = Date.now();
 				newX = Phaser.Math.Between(100, 300);
 				const tileX = this.map.worldToTileX(newX);
 				const tileY = this.map.worldToTileY(newY);
@@ -145,31 +173,31 @@ class Example extends Phaser.Scene {
 				}
 
 
-// Calculate the peak height of the jump
-const peakHeight = newY - 60; // Adjust for a higher/lower jump arc
+				// Calculate the peak height of the jump
+				const peakHeight = newY - 60; // Adjust for a higher/lower jump arc
 
 				// Temporarily set to jump texture and update position
 				//this.idleSprite.setPosition(newX, newY - 40); // Move directly to the new position
 				this.tweens.add({
-    targets: this.idleSprite,
-    y: peakHeight, // Move to the peak of the jump
-    duration: 300, // Time to reach the peak
-    ease: 'Quad.easeOut', // Smooth ascent
-    onComplete: () => {
-        // Tween for the downward movement
-        this.tweens.add({
-            targets: this.idleSprite,
-            x: newX, // Move horizontally while falling
-            y: newY - 20, // Land at the target
-            duration: 200, // Time to land
-            ease: 'Quad.easeIn', // Smooth descent
-            onComplete: () => {
-                // Switch back to idle texture after the jump
-                this.idleSprite.setTexture('idle');
-            }
-        });
-    }
-});
+					targets: this.idleSprite,
+					y: peakHeight, // Move to the peak of the jump
+					duration: 300, // Time to reach the peak
+					ease: 'Quad.easeOut', // Smooth ascent
+					onComplete: () => {
+						// Tween for the downward movement
+						this.tweens.add({
+							targets: this.idleSprite,
+							x: newX, // Move horizontally while falling
+							y: newY - 20, // Land at the target
+							duration: 200, // Time to land
+							ease: 'Quad.easeIn', // Smooth descent
+							onComplete: () => {
+								// Switch back to idle texture after the jump
+								this.idleSprite.setTexture('idle');
+							}
+						});
+					}
+				});
 
 				//this.physics.moveTo(this.idleSprite, newX, (newY-40), 10, 200);
 				oldX = newX;
@@ -203,7 +231,7 @@ const peakHeight = newY - 60; // Adjust for a higher/lower jump arc
 
 				word = top100Words[number];
 				document.getElementById('myForm').reset();
-				scoreText.setText('Score: ' + number);
+				scoreText.setText('Score: ' + score);
 				wordText.setText(word);
 			}
 		}
@@ -211,7 +239,7 @@ const peakHeight = newY - 60; // Adjust for a higher/lower jump arc
 
 	update() {
 		const targetX = newX;
-		const targetY = newY-40;
+		const targetY = newY - 40;
 		const tolerance = 20; // Allowable distance before stopping
 
 		if (Phaser.Math.Distance.Between(this.idleSprite.x, this.idleSprite.y, targetX, targetY) < tolerance) {
