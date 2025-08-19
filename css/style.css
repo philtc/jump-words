@@ -14,16 +14,16 @@ body, html {
 }
 
 #myForm {
-	position: absolute;
-	background-color: '#479cde';
-	border: none;
-	width: 400px;
-	top: 20%;
+    position: absolute;
+    background-color: #479cde;
+    border: none;
+    width: 400px;
+    top: 20%;
     text-align: center;
 }
 
 #area51 {
-	background-color: '#479cde';
-	border: none;
+    background-color: #479cde;
+    border: none;
 
 }
