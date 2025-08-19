@@ -23,6 +23,7 @@ let score = 0;
 let word;
 let scoreText;
 let wordText;
+let nextWordText;
 let wpmText;
 let wordsLeftText;
 let newX = 0;
@@ -295,6 +296,26 @@ class Example extends Phaser.Scene {
             align: 'center'
         }).setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(5);
 
+        // Measure a single space in the same style to position next word precisely
+        const spaceMeasure = this.add.text(0, 0, ' ', {
+            fontSize: '2.2em',
+            fontFamily: 'Arial',
+            fontStyle: 'bold'
+        }).setVisible(false);
+        this.spaceW = spaceMeasure.width || 8;
+        spaceMeasure.destroy();
+
+        // Grey next-word preview immediately after current word (one space apart)
+        const rightNow = wordText.getBounds().right;
+        nextWordText = this.add.text(rightNow + this.spaceW, 45, top100Words[1] || '', {
+            fontSize: '1.6em',
+            fontFamily: 'Arial',
+            fill: '#9e9e9e',
+            stroke: '#000000',
+            strokeThickness: 3,
+            align: 'left'
+        }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(5);
+
 		this.formUtil = new FormUtil({ scene: this });
 		// Create hidden input for capturing typing if not present
 		let hidden = document.getElementById('area51');
@@ -439,10 +460,8 @@ class Example extends Phaser.Scene {
 				const cam = this.cameras.main;
 				const cx = cam.worldView.centerX;
 				const cy = cam.worldView.centerY;
-				// Create particle manager with emitter via config (3.90 pattern)
-				const manager = this.add.particles('star', undefined, {
-					x: cx,
-					y: cy,
+				// Phaser 3.60+ pattern: factory returns a Particle Emitter directly
+				const emitter = this.add.particles(cx, cy, 'star', undefined, {
 					angle: { min: 0, max: 360 },
 					speed: { min: 220, max: 520 },
 					gravityY: 300,
@@ -452,13 +471,13 @@ class Example extends Phaser.Scene {
 					quantity: 0,
 					emitting: false
 				});
-				manager.setDepth(13);
-				const emitter = manager.emitters.first;
-				emitter && emitter.explode(260, cx, cy);
-				this.time.delayedCall(1800, () => { manager.destroy(); });
+				emitter.setDepth(13);
+				emitter.explode(260, cx, cy);
+				this.time.delayedCall(1800, () => { emitter.destroy(); });
 
 				document.getElementById("area51").style.display = 'none';
 				wordText.setText('');
+				nextWordText && nextWordText.setText('');
 				// Show win overlay and UI (banner + restart)
 				this.winOverlay.setVisible(true);
 				this.winText.setVisible(true);
@@ -561,6 +580,11 @@ class Example extends Phaser.Scene {
 				}
 				scoreText.setText('Score: ' + score);
 				wordText.setText(word);
+				if (nextWordText) {
+					nextWordText.setText(top100Words[number + 1] || '');
+					const right = wordText.getBounds().right;
+					nextWordText.setPosition(right + (this.spaceW || 8), nextWordText.y);
+				}
 				wordsLeftText.setText('Words left: ' + (top100Words.length - number));
 			}
 		}
