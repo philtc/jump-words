@@ -106,13 +106,6 @@ class Example extends Phaser.Scene {
 			g2.generateTexture('star', 32, 32);
 			g2.destroy();
 		}
-		if (!this.textures.exists('star')) {
-			const gs = this.add.graphics();
-			gs.fillStyle(0xffffff, 1);
-			gs.fillCircle(3, 3, 3);
-			gs.generateTexture('star', 6, 6);
-			gs.destroy();
-		}
 
 		// Create a Canvas texture (remove if exists to avoid key collision on restart)
         if (this.textures.exists('gradient')) {
@@ -485,20 +478,23 @@ class Example extends Phaser.Scene {
 				const cam = this.cameras.main;
 				const cx = cam.worldView.centerX;
 				const cy = cam.worldView.centerY;
-				                // Phaser 3.90: factory returns a Particle Emitter Game Object directly
-                const emitter = this.add.particles(cx, cy, 'star', {
-                    angle: { min: 0, max: 360 },
-                    speed: { min: 220, max: 520 },
-                    gravityY: 300,
-                    lifespan: { min: 900, max: 1600 },
-                    scale: { start: 1.8, end: 0 },
-                    blendMode: 'ADD',
-                    quantity: 0,
-                    emitting: false
-                });
-                emitter.setDepth(13);
-                emitter.explode(260, cx, cy);
-                this.time.delayedCall(1800, () => { emitter.destroy(); });
+				
+				// Phaser 3.90: factory returns a Particle Emitter Game Object directly
+				const emitter = this.add.particles(cx, cy, 'star', {
+					angle: { min: 0, max: 360 },
+					speed: { min: 220, max: 520 },
+					gravityY: 300,
+					lifespan: { min: 900, max: 1600 },
+					scale: { start: 1.8, end: 0 },
+					blendMode: 'ADD',
+					quantity: 0,
+					emitting: false
+				});
+				emitter.setDepth(13);
+				emitter.explode(260, cx, cy);
+				this.time.delayedCall(1800, () => { 
+					emitter.destroy(); 
+				});
 
 				document.getElementById("area51").style.display = 'none';
 				wordText.setText('');
