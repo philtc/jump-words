@@ -42,6 +42,25 @@ const WPM_UPDATE_MS = 1000;
 let lastWpmUpdate = 0;
 
 class Example extends Phaser.Scene {
+	init() {
+        number = 0;
+        score = 0;
+        word = undefined;
+        scoreText = undefined;
+        wordText = undefined;
+        nextWordText = undefined;
+        wpmText = undefined;
+        wordsLeftText = undefined;
+        newX = 0;
+        oldX = 100;
+        newY = 395;
+        oldY = 395;
+        colorTop = '#0000ff';
+        colorBottom = '#87cefa';
+        startTime = Date.now();
+        endTime = undefined;
+        lastWpmUpdate = 0;
+    }
 	preload() {
 		this.load.setBaseURL('assets/');
 		this.load.image('idle', 'idle/frame-1.png');
@@ -460,20 +479,19 @@ class Example extends Phaser.Scene {
 				const cam = this.cameras.main;
 				const cx = cam.worldView.centerX;
 				const cy = cam.worldView.centerY;
-				// Phaser 3.60+ pattern: factory returns a Particle Emitter directly
-				const emitter = this.add.particles(cx, cy, 'star', undefined, {
-					angle: { min: 0, max: 360 },
-					speed: { min: 220, max: 520 },
-					gravityY: 300,
-					lifespan: { min: 900, max: 1600 },
-					scale: { start: 1.8, end: 0 },
-					blendMode: 'ADD',
-					quantity: 0,
-					emitting: false
-				});
-				emitter.setDepth(13);
-				emitter.explode(260, cx, cy);
-				this.time.delayedCall(1800, () => { emitter.destroy(); });
+				                // Particle emitter (compatible with Phaser 3.90): use a Particle Emitter Manager
+                const particles = this.add.particles('star');
+                const emitter = particles.createEmitter({
+                    angle: { min: 0, max: 360 },
+                    speed: { min: 220, max: 520 },
+                    gravityY: 300,
+                    lifespan: { min: 900, max: 1600 },
+                    scale: { start: 1.8, end: 0 },
+                    blendMode: 'ADD'
+                });
+                particles.setDepth(13);
+                emitter.explode(260, cx, cy);
+                this.time.delayedCall(1800, () => { particles.destroy(); });
 
 				document.getElementById("area51").style.display = 'none';
 				wordText.setText('');
