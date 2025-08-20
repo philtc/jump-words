@@ -479,19 +479,20 @@ class Example extends Phaser.Scene {
 				const cam = this.cameras.main;
 				const cx = cam.worldView.centerX;
 				const cy = cam.worldView.centerY;
-				                // Particle emitter (compatible with Phaser 3.90): use a Particle Emitter Manager
-                const particles = this.add.particles('star');
-                const emitter = particles.createEmitter({
+				                // Phaser 3.90: factory returns a Particle Emitter Game Object directly
+                const emitter = this.add.particles(cx, cy, 'star', {
                     angle: { min: 0, max: 360 },
                     speed: { min: 220, max: 520 },
                     gravityY: 300,
                     lifespan: { min: 900, max: 1600 },
                     scale: { start: 1.8, end: 0 },
-                    blendMode: 'ADD'
+                    blendMode: 'ADD',
+                    quantity: 0,
+                    emitting: false
                 });
-                particles.setDepth(13);
+                emitter.setDepth(13);
                 emitter.explode(260, cx, cy);
-                this.time.delayedCall(1800, () => { particles.destroy(); });
+                this.time.delayedCall(1800, () => { emitter.destroy(); });
 
 				document.getElementById("area51").style.display = 'none';
 				wordText.setText('');
