@@ -114,8 +114,11 @@ class Example extends Phaser.Scene {
 			gs.destroy();
 		}
 
-		// Create a Canvas texture
-		const gradientTexture = this.textures.createCanvas('gradient', width, height);
+		// Create a Canvas texture (remove if exists to avoid key collision on restart)
+        if (this.textures.exists('gradient')) {
+            this.textures.remove('gradient');
+        }
+        const gradientTexture = this.textures.createCanvas('gradient', width, height);
 
 		// Get the context to draw on
 		const ctx = gradientTexture.context;
@@ -159,8 +162,11 @@ class Example extends Phaser.Scene {
 		// Add the gradient as an image (background) and pin it to camera
 		this.add.image(0, 0, 'gradient').setOrigin(0).setDepth(0).setScrollFactor(0);
 
-		// Create a simple procedural cloud texture
-		const cw = 120, ch = 60;
+		// Create a simple procedural cloud texture (remove if exists on restart)
+        if (this.textures.exists('cloud')) {
+            this.textures.remove('cloud');
+        }
+        const cw = 120, ch = 60;
 		const cloudTex = this.textures.createCanvas('cloud', cw, ch);
 		const cctx = cloudTex.context;
 		cctx.clearRect(0, 0, cw, ch);
