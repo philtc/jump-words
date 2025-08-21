@@ -495,56 +495,76 @@ class Example extends Phaser.Scene {
 				const screenCenterX = cam.scrollX + cam.width / 2;
 				const screenCenterY = cam.scrollY + cam.height / 2;
 				
-				// Create star explosion effect using correct Phaser 3.90 syntax
-				console.log('Creating star explosion at:', screenCenterX, screenCenterY);
+				// Create star explosion effect - use screen coordinates, not world coordinates
+				const width = this.cameras.main.width;
+				const height = this.cameras.main.height;
+				const explosionX = width / 2;
+				const explosionY = height / 2;
+				
+				console.log('Creating star explosion at screen coords:', explosionX, explosionY);
 				console.log('Star texture exists:', this.textures.exists('star'));
+				console.log('Camera scroll:', this.cameras.main.scrollX, this.cameras.main.scrollY);
 				
-				// First, add a simple star image to test visibility
-				const testStar = this.add.image(screenCenterX, screenCenterY, 'star')
-					.setScale(2)
-					.setDepth(20)
-					.setScrollFactor(0)
-					.setAlpha(1);
+				// Create multiple large test stars first to verify visibility
+				for (let i = 0; i < 5; i++) {
+					const testStar = this.add.image(explosionX + (i - 2) * 50, explosionY, 'star')
+						.setScale(1.5)
+						.setDepth(100)
+						.setScrollFactor(0)
+						.setAlpha(1)
+						.setTint(0xffff00); // Yellow tint to make them more visible
+					
+					// Animate the test stars
+					this.tweens.add({
+						targets: testStar,
+						y: testStar.y - 100,
+						alpha: 0,
+						scale: 0.1,
+						duration: 1500,
+						delay: i * 100,
+						onComplete: () => testStar.destroy()
+					});
+				}
 				
-				// Fade out the test star
-				this.tweens.add({
-					targets: testStar,
-					alpha: 0,
-					duration: 2000,
-					onComplete: () => testStar.destroy()
-				});
+				// Try a different approach for particles - create them manually
+				const starGroup = this.add.group();
 				
-				// Create particle explosion
-				const emitter = this.add.particles(screenCenterX, screenCenterY, 'star', {
-					angle: { min: 0, max: 360 },
-					speed: { min: 100, max: 300 },
-					gravityY: 150,
-					lifespan: { min: 1000, max: 2000 },
-					scale: { start: 0.8, end: 0 },
-					alpha: { start: 1, end: 0 },
-					blendMode: 'NORMAL',
-					quantity: 0,
-					emitting: false
-				});
-				emitter.setDepth(15);
-				emitter.setScrollFactor(0);
+				for (let i = 0; i < 30; i++) {
+					const angle = (360 / 30) * i;
+					const speed = Phaser.Math.Between(100, 250);
+					const star = this.add.image(explosionX, explosionY, 'star')
+						.setScale(Phaser.Math.FloatBetween(0.3, 0.8))
+						.setDepth(99)
+						.setScrollFactor(0)
+						.setTint(Phaser.Math.Between(0xffffff, 0xffff88));
+					
+					starGroup.add(star);
+					
+					// Calculate velocity
+					const radians = Phaser.Math.DegToRad(angle);
+					const vx = Math.cos(radians) * speed;
+					const vy = Math.sin(radians) * speed;
+					
+					// Animate each star
+					this.tweens.add({
+						targets: star,
+						x: star.x + vx,
+						y: star.y + vy + 200, // Add gravity effect
+						alpha: 0,
+						scale: 0,
+						duration: Phaser.Math.Between(1000, 2000),
+						ease: 'Quad.easeOut',
+						onComplete: () => star.destroy()
+					});
+				}
 				
-				// Trigger multiple explosions
-				emitter.explode(50, screenCenterX, screenCenterY);
-				console.log('First explosion triggered');
+				console.log('Manual star explosion created with', starGroup.children.size, 'stars');
 				
-				this.time.delayedCall(300, () => {
-					emitter.explode(40, screenCenterX, screenCenterY);
-					console.log('Second explosion triggered');
-				});
-				
-				this.time.delayedCall(600, () => {
-					emitter.explode(30, screenCenterX, screenCenterY);
-					console.log('Third explosion triggered');
-				});
-				
-				this.time.delayedCall(2500, () => { 
-					emitter.destroy(); 
+				// Clean up any remaining stars after animation
+				this.time.delayedCall(3000, () => { 
+					if (starGroup && starGroup.children) {
+						starGroup.clear(true, true);
+					}
 				});
 
 				document.getElementById("area51").style.display = 'none';
