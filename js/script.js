@@ -60,6 +60,7 @@ class Example extends Phaser.Scene {
         startTime = Date.now();
         endTime = undefined;
         lastWpmUpdate = 0;
+        this.gameComplete = false;
     }
 	preload() {
 		this.load.setBaseURL('assets/');
@@ -474,6 +475,12 @@ class Example extends Phaser.Scene {
 		if (text.includes(word)) {
 			number++;
 			if (number >= top100Words.length) {
+				// Mark game as complete to stop WPM updates
+				this.gameComplete = true;
+				
+				// Update words left to 0 before showing completion
+				wordsLeftText.setText('Words left: 0');
+				
 				// Big confetti/star explosion at camera center
 				const cam = this.cameras.main;
 				const cx = cam.worldView.centerX;
@@ -663,8 +670,8 @@ class Example extends Phaser.Scene {
         }
     }
 
-    // Update live WPM display (throttled)
-    if (typeof startTime === 'number' && wpmText) {
+    // Update live WPM display (throttled) - only if game is not complete
+    if (typeof startTime === 'number' && wpmText && !this.gameComplete) {
         const now = Date.now();
         if (now - lastWpmUpdate >= WPM_UPDATE_MS) {
             const elapsed = Math.max(1, now - startTime); // avoid divide by zero
