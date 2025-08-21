@@ -490,27 +490,57 @@ class Example extends Phaser.Scene {
 				// Update words left to 0 before showing completion
 				wordsLeftText.setText('Words left: 0');
 				
-				// Big confetti/star explosion at camera center
+				// Big confetti/star explosion at screen center (not world center)
 				const cam = this.cameras.main;
-				const cx = cam.worldView.centerX;
-				const cy = cam.worldView.centerY;
+				const screenCenterX = cam.scrollX + cam.width / 2;
+				const screenCenterY = cam.scrollY + cam.height / 2;
 				
-				// Create star explosion effect
-				const emitter = this.add.particles(cx, cy, 'star', {
+				// Create star explosion effect using correct Phaser 3.90 syntax
+				console.log('Creating star explosion at:', screenCenterX, screenCenterY);
+				console.log('Star texture exists:', this.textures.exists('star'));
+				
+				// First, add a simple star image to test visibility
+				const testStar = this.add.image(screenCenterX, screenCenterY, 'star')
+					.setScale(2)
+					.setDepth(20)
+					.setScrollFactor(0)
+					.setAlpha(1);
+				
+				// Fade out the test star
+				this.tweens.add({
+					targets: testStar,
+					alpha: 0,
+					duration: 2000,
+					onComplete: () => testStar.destroy()
+				});
+				
+				// Create particle explosion
+				const emitter = this.add.particles(screenCenterX, screenCenterY, 'star', {
 					angle: { min: 0, max: 360 },
-					speed: { min: 200, max: 500 },
-					gravityY: 300,
+					speed: { min: 100, max: 300 },
+					gravityY: 150,
 					lifespan: { min: 1000, max: 2000 },
 					scale: { start: 0.8, end: 0 },
 					alpha: { start: 1, end: 0 },
-					blendMode: 'ADD'
+					blendMode: 'NORMAL',
+					quantity: 0,
+					emitting: false
 				});
-				emitter.setDepth(13);
-				emitter.explode(100, cx, cy);
+				emitter.setDepth(15);
+				emitter.setScrollFactor(0);
 				
-				// Create a second wave of stars
+				// Trigger multiple explosions
+				emitter.explode(50, screenCenterX, screenCenterY);
+				console.log('First explosion triggered');
+				
 				this.time.delayedCall(300, () => {
-					emitter.explode(80, cx, cy);
+					emitter.explode(40, screenCenterX, screenCenterY);
+					console.log('Second explosion triggered');
+				});
+				
+				this.time.delayedCall(600, () => {
+					emitter.explode(30, screenCenterX, screenCenterY);
+					console.log('Third explosion triggered');
 				});
 				
 				this.time.delayedCall(2500, () => { 
