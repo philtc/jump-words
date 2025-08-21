@@ -495,45 +495,20 @@ class Example extends Phaser.Scene {
 				const screenCenterX = cam.scrollX + cam.width / 2;
 				const screenCenterY = cam.scrollY + cam.height / 2;
 				
-				// Create star explosion effect - use screen coordinates, not world coordinates
+				// Create star explosion effect
 				const width = this.cameras.main.width;
 				const height = this.cameras.main.height;
 				const explosionX = width / 2;
 				const explosionY = height / 2;
 				
-				console.log('Creating star explosion at screen coords:', explosionX, explosionY);
-				console.log('Star texture exists:', this.textures.exists('star'));
-				console.log('Camera scroll:', this.cameras.main.scrollX, this.cameras.main.scrollY);
-				
-				// Create multiple large test stars first to verify visibility
-				for (let i = 0; i < 5; i++) {
-					const testStar = this.add.image(explosionX + (i - 2) * 50, explosionY, 'star')
-						.setScale(1.5)
-						.setDepth(100)
-						.setScrollFactor(0)
-						.setAlpha(1)
-						.setTint(0xffff00); // Yellow tint to make them more visible
-					
-					// Animate the test stars
-					this.tweens.add({
-						targets: testStar,
-						y: testStar.y - 100,
-						alpha: 0,
-						scale: 0.1,
-						duration: 1500,
-						delay: i * 100,
-						onComplete: () => testStar.destroy()
-					});
-				}
-				
-				// Try a different approach for particles - create them manually
+				// Create star explosion with more stars
 				const starGroup = this.add.group();
 				
-				for (let i = 0; i < 30; i++) {
-					const angle = (360 / 30) * i;
-					const speed = Phaser.Math.Between(100, 250);
+				for (let i = 0; i < 80; i++) {
+					const angle = (360 / 80) * i;
+					const speed = Phaser.Math.Between(80, 300);
 					const star = this.add.image(explosionX, explosionY, 'star')
-						.setScale(Phaser.Math.FloatBetween(0.3, 0.8))
+						.setScale(Phaser.Math.FloatBetween(0.2, 1.0))
 						.setDepth(99)
 						.setScrollFactor(0)
 						.setTint(Phaser.Math.Between(0xffffff, 0xffff88));
@@ -552,13 +527,11 @@ class Example extends Phaser.Scene {
 						y: star.y + vy + 200, // Add gravity effect
 						alpha: 0,
 						scale: 0,
-						duration: Phaser.Math.Between(1000, 2000),
+						duration: Phaser.Math.Between(1000, 2500),
 						ease: 'Quad.easeOut',
 						onComplete: () => star.destroy()
 					});
 				}
-				
-				console.log('Manual star explosion created with', starGroup.children.size, 'stars');
 				
 				// Clean up any remaining stars after animation
 				this.time.delayedCall(3000, () => { 
