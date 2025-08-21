@@ -34,6 +34,7 @@ let colorTop = '#0000ff';
 let colorBottom = '#87cefa';
 let startTime = Date.now();
 let endTime;
+let totalWordsTyped = 0;
 
 // Percentage of the screen height the platforms will rise over the full word list
 const RISE_PERCENT = 0.65; // 65% of the screen height across all words
@@ -60,6 +61,7 @@ class Example extends Phaser.Scene {
         startTime = Date.now();
         endTime = undefined;
         lastWpmUpdate = 0;
+        totalWordsTyped = 0;
         this.gameComplete = false;
     }
 	preload() {
@@ -474,9 +476,16 @@ class Example extends Phaser.Scene {
 
 		if (text.includes(word)) {
 			number++;
+			totalWordsTyped++;
+			
 			if (number >= top100Words.length) {
 				// Mark game as complete to stop WPM updates
 				this.gameComplete = true;
+				
+				// Calculate final WPM for all words
+				const totalTime = Date.now() - startTime;
+				const finalWPM = Math.round((totalWordsTyped * 60000) / totalTime);
+				wpmText.setText('Final WPM: ' + finalWPM);
 				
 				// Update words left to 0 before showing completion
 				wordsLeftText.setText('Words left: 0');
@@ -486,20 +495,25 @@ class Example extends Phaser.Scene {
 				const cx = cam.worldView.centerX;
 				const cy = cam.worldView.centerY;
 				
-				// Phaser 3.90: factory returns a Particle Emitter Game Object directly
+				// Create star explosion effect
 				const emitter = this.add.particles(cx, cy, 'star', {
 					angle: { min: 0, max: 360 },
-					speed: { min: 220, max: 520 },
+					speed: { min: 200, max: 500 },
 					gravityY: 300,
-					lifespan: { min: 900, max: 1600 },
-					scale: { start: 1.8, end: 0 },
-					blendMode: 'ADD',
-					quantity: 0,
-					emitting: false
+					lifespan: { min: 1000, max: 2000 },
+					scale: { start: 0.8, end: 0 },
+					alpha: { start: 1, end: 0 },
+					blendMode: 'ADD'
 				});
 				emitter.setDepth(13);
-				emitter.explode(260, cx, cy);
-				this.time.delayedCall(1800, () => { 
+				emitter.explode(100, cx, cy);
+				
+				// Create a second wave of stars
+				this.time.delayedCall(300, () => {
+					emitter.explode(80, cx, cy);
+				});
+				
+				this.time.delayedCall(2500, () => { 
 					emitter.destroy(); 
 				});
 
@@ -516,10 +530,14 @@ class Example extends Phaser.Scene {
             // compute instantaneous WPM for the last word
             const instantWPM = 60000 / Math.max(1, (endTime - startTime));
             score += this.calcScore(startTime, endTime);
-            startTime = Date.now();
+            
+            // Calculate cumulative WPM for all words typed so far
+            const totalTime = endTime - startTime;
+            const cumulativeWPM = Math.round((totalWordsTyped * 60000) / totalTime);
+            
             // update WPM immediately on word completion (outside of throttle)
             if (wpmText) {
-                wpmText.setText('WPM (words/min): ' + Math.round(instantWPM));
+                wpmText.setText('WPM: ' + cumulativeWPM);
             }
             // Pick nearest platform above current position
             const currentY = this.idleSprite.y;
@@ -671,12 +689,12 @@ class Example extends Phaser.Scene {
     }
 
     // Update live WPM display (throttled) - only if game is not complete
-    if (typeof startTime === 'number' && wpmText && !this.gameComplete) {
+    if (typeof startTime === 'number' && wpmText && !this.gameComplete && totalWordsTyped > 0) {
         const now = Date.now();
         if (now - lastWpmUpdate >= WPM_UPDATE_MS) {
             const elapsed = Math.max(1, now - startTime); // avoid divide by zero
-            const currentWPM = 60000 / elapsed;
-            wpmText.setText('WPM: ' + Math.round(currentWPM));
+            const currentWPM = Math.round((totalWordsTyped * 60000) / elapsed);
+            wpmText.setText('WPM: ' + currentWPM);
             lastWpmUpdate = now;
         }
     }
